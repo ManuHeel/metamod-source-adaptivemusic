@@ -26,3 +26,6 @@ Release.*/
 build/
 obj-*/
 .gdb_history
+
+# JetBrains files
+.idea/
