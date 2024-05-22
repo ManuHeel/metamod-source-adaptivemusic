@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stub_mm", "stub_mm.vcxproj", "{EA8E7106-8D09-46A1-881B-FFBC4B8532F2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adaptivemusic_plugin", "adaptivemusic_plugin.vcxproj", "{EA8E7106-8D09-46A1-881B-FFBC4B8532F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,19 +1,12 @@
 /**
- * vim: set ts=4 sw=4 tw=99 noet :
  * ======================================================
- * Metamod:Source Stub Plugin
- * Written by AlliedModders LLC.
+ * Metamod:Source AdaptiveMusic Plugin
+ * Written by Manuel Russello
  * ======================================================
- *
- * This software is provided 'as-is', without any express or implied warranty.
- * In no event will the authors be held liable for any damages arising from 
- * the use of this software.
- *
- * This stub plugin is public domain.
  */
 
-#ifndef _INCLUDE_METAMOD_SOURCE_STUB_PLUGIN_H_
-#define _INCLUDE_METAMOD_SOURCE_STUB_PLUGIN_H_
+#ifndef _INCLUDE_ADAPTIVEMUSIC_PLUGIN_H_
+#define _INCLUDE_ADAPTIVEMUSIC_PLUGIN_H_
 
 #include <ISmmPlugin.h>
 
@@ -21,7 +14,7 @@
 #define snprintf _snprintf
 #endif
 
-class StubPlugin : public ISmmPlugin
+class AdaptiveMusicPlugin : public ISmmPlugin
 {
 public:
 	bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late);
@@ -42,8 +35,8 @@ public:
 
 void Hook_ServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 
-extern StubPlugin g_StubPlugin;
+extern AdaptiveMusicPlugin g_AdaptiveMusicPlugin;
 
 PLUGIN_GLOBALVARS();
 
-#endif //_INCLUDE_METAMOD_SOURCE_STUB_PLUGIN_H_
+#endif //_INCLUDE_ADAPTIVEMUSIC_PLUGIN_H_

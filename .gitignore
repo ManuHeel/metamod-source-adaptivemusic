@@ -29,3 +29,6 @@ obj-*/
 
 # JetBrains files
 .idea/
+
+# AdaptiveMusic build files
+projects/adaptivemusic_plugin/msvc10/Debug - Orange Box Valve/
