@@ -1176,6 +1176,7 @@ copy "$(TargetDir)$(TargetName).pdb" "C:\Program Files (x86)\Steam\steamapps\com
   <ItemGroup>
     <ClInclude Include="..\adaptivemusic_plugin.h" />
     <ClInclude Include="..\adaptivemusic_watcher.h" />
+    <ClInclude Include="..\engine_wrappers.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
