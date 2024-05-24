@@ -229,6 +229,15 @@ void CAdaptiveMusicPlugin::Hook_ClientCommand(edict_t *pEntity)
                         META_CONPRINTF("usage: amp fmod stopevent <eventpath>\n");
                         RETURN_META(MRES_SUPERCEDE);
                     }
+                    if (strcmp(arg2, "setglobalparameter") == 0) {
+                        if (args.ArgC() > 4 && strcmp(args.Arg(3), "") != 0 && strcmp(args.Arg(4), "") != 0) {
+                            g_AdaptiveMusicPlugin.SetFMODGlobalParameter(args.Arg(3), atof(args.Arg(4)));
+                            RETURN_META(MRES_SUPERCEDE);
+                        }
+                        META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine\n");
+                        META_CONPRINTF("usage: amp fmod setglobalparameter <parametername> <parametervalue>\n");
+                        RETURN_META(MRES_SUPERCEDE);
+                    }
                 }
                 META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine\n");
                 META_CONPRINTF("usage: amp fmod <subcommand>\n");
@@ -237,6 +246,8 @@ void CAdaptiveMusicPlugin::Hook_ClientCommand(edict_t *pEntity)
                 META_CONPRINTF("                loadbank <bankname> - Load an FMOD bank\n");
                 META_CONPRINTF("                startevent <eventpath> - Start an FMOD event\n");
                 META_CONPRINTF("                stopevent <eventpath> - Stop an FMOD event\n");
+                META_CONPRINTF(
+                        "                setglobalparameter <parametername> <parametervalue> - Set an FMOD global parameter's value\n");
                 RETURN_META(MRES_SUPERCEDE);
             }
         }
@@ -559,7 +570,6 @@ int CAdaptiveMusicPlugin::StopFMODEvent(const char *eventPath) {
     return (0);
 }
 
-/*
 //-----------------------------------------------------------------------------
 // Purpose: Set the value for a global FMOD Parameter
 // Input:
@@ -568,7 +578,6 @@ int CAdaptiveMusicPlugin::StopFMODEvent(const char *eventPath) {
 // Output: The error code (or 0 if no error was encountered)
 //-----------------------------------------------------------------------------
 int CAdaptiveMusicPlugin::SetFMODGlobalParameter(const char *parameterName, float value) {
-    ;
     FMOD_RESULT result;
     result = fmodStudioSystem->setParameterByName(parameterName, value);
     fmodStudioSystem->update();
@@ -580,36 +589,6 @@ int CAdaptiveMusicPlugin::SetFMODGlobalParameter(const char *parameterName, floa
     }
     META_CONPRINTF("AdaptiveMusic Plugin - Global Parameter %s set to %f\n", parameterName, value);
     return (0);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Provide a console command to set the value for a global FMOD Parameter
-// Input:
-// - Arg(1): The name of the FMOD Parameter to set (to load as ConCommand argument)
-// - Arg(2): The value to set the FMOD Parameter to (to load as ConCommand argument)
-//-----------------------------------------------------------------------------
-void CC_SetFMODGlobalParameter(const CCommand &args) {
-    if (args.ArgC() < 2 || Q_strcmp(args.Arg(1), "") == 0 || Q_strcmp(args.Arg(2), "") == 0) {
-        Msg("Usage: fmod_setglobalparameter <parametername> <value>\n");
-        return;
-    }
-    g_AdaptiveMusicPlugin.SetFMODGlobalParameter(args.Arg(1), atof(args.Arg(2)));
-}
-
-ConCommand setGlobalParameter("fmod_setglobalparameter", CC_SetFMODGlobalParameter, "FMOD: Set a global parameter");
-
-//-----------------------------------------------------------------------------
-// Purpose: Provide a UserMessage handler to set the value for a global FMOD Parameter
-// Input:
-// - The name of the FMOD Parameter to set (to load as ConCommand argument)
-// - The value to set the FMOD Parameter to (to load as ConCommand argument)
-//-----------------------------------------------------------------------------
-void MsgFunc_SetFMODGlobalParameter(bf_read &msg) {
-    char szString[256];
-    msg.ReadString(szString, sizeof(szString));
-    float szFloat;
-    szFloat = msg.ReadFloat();
-    g_AdaptiveMusicPlugin.SetFMODGlobalParameter(szString, szFloat);
 }
 
 //-----------------------------------------------------------------------------
@@ -636,5 +615,3 @@ int CAdaptiveMusicPlugin::SetFMODPausedState(bool pausedState) {
 
     return (0);
 }
-
-*/
