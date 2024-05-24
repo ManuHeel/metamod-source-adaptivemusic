@@ -23,24 +23,23 @@
 #define snprintf _snprintf
 #endif
 
-// FMOD global variables
-FMOD::Studio::Bank *loadedFmodStudioBank;
-char *loadedFmodStudioBankName;
-FMOD::Studio::Bank *loadedFmodStudioStringsBank;
-FMOD::Studio::EventDescription *loadedFmodStudioEventDescription;
-char *loadedFmodStudioEventPath;
-FMOD::Studio::EventInstance *createdFmodStudioEventInstance;
-
-// AdaptiveMusic global variables
-const char *loadedBankName;
-const char *startedEventPath;
 
 class CAdaptiveMusicPlugin : public ISmmPlugin, public IMetamodListener {
 
 protected:
+    // FMOD global variables
     FMOD::Studio::System *fmodStudioSystem;
+    FMOD::Studio::Bank *loadedFMODStudioBank;
+    char *loadedFMODStudioBankName;
+    FMOD::Studio::Bank *loadedFMODStudioStringsBank;
+    FMOD::Studio::EventDescription *loadedFMODStudioEventDescription;
+    char *loadedFMODStudioEventPath;
+    FMOD::Studio::EventInstance *createdFMODStudioEventInstance;
 
-public:
+public: // Core Metamod:Source components
+    ISmmAPI *ismm;
+
+public: // Main Metamod:Source plugins API callbacks
     bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late);
 
     bool Unload(char *error, size_t maxlen);
@@ -92,7 +91,7 @@ public: // Hooks
     void Hook_ClientCommand(edict_t *pEntity);
 #endif
 
-public:
+public: // Metamod:Source plugins information
     const char *GetAuthor();
 
     const char *GetName();
@@ -109,31 +108,32 @@ public:
 
     const char *GetLogTag();
 
-public:
+public: // FMOD engine API methods
     int StartFMODEngine();
 
     int StopFMODEngine();
-/*
+
+    const char *GetFMODBankPath(const char *bankName);
+
     int LoadFMODBank(const char *bankName);
 
     int StartFMODEvent(const char *eventPath);
 
     int StopFMODEvent(const char *eventPath);
-
+/*
     int SetFMODGlobalParameter(const char *parameterName, float value);
 
     int SetFMODPausedState(bool pausedState);
 
-    const char *GetFMODBankPath(const char *bankName);
-
-public:
+public: // Adaptive music system management
     void CalculateAdaptiveMusicState();
 
     void InitAdaptiveMusic();
 
     void ShutDownAdaptiveMusic();
 
-    void ParseKeyValue(KeyValues *keyValue);*/
+    void ParseKeyValue(KeyValues *keyValue);
+*/
 };
 
 extern CAdaptiveMusicPlugin g_AdaptiveMusicPlugin;

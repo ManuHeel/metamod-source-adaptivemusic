@@ -120,6 +120,9 @@ bool CAdaptiveMusicPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t 
 
     META_CONPRINTF("AdaptiveMusic Plugin - Plugin successfully started\n");
 
+    // Save core elements as object pointers
+    this->ismm = ismm;
+
     // Start the FMOD engine
     StartFMODEngine();
 
@@ -171,6 +174,9 @@ void CAdaptiveMusicPlugin::Hook_ClientActive(edict_t *pEntity, bool bLoadGame) {
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 
+//-----------------------------------------------------------------------------
+// Purpose: Provide a CLI to interact with the AdaptiveMusic Plugin through the console
+//-----------------------------------------------------------------------------
 void CAdaptiveMusicPlugin::Hook_ClientCommand(edict_t *pEntity, const CCommand &args)
 #else
 void CAdaptiveMusicPlugin::Hook_ClientCommand(edict_t *pEntity)
@@ -179,13 +185,7 @@ void CAdaptiveMusicPlugin::Hook_ClientCommand(edict_t *pEntity)
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
     CCommand args;
 #endif
-
-    if (!pEntity || pEntity->IsFree()) {
-        return;
-    }
-
     const char *cmd = args.Arg(0);
-
     if (strcmp(cmd, "amp") == 0) {
         // amp commands
         if (args.ArgC() > 1 && strcmp(args.Arg(1), "") != 0) {
@@ -195,26 +195,56 @@ void CAdaptiveMusicPlugin::Hook_ClientCommand(edict_t *pEntity)
                 if (args.ArgC() > 2 && strcmp(args.Arg(2), "") != 0) {
                     const char *arg2 = args.Arg(2);
                     if (strcmp(arg2, "status") == 0) {
-                        if (this->fmodStudioSystem->isValid()) {
-                            Msg("AdaptiveMusic Plugin - FMOD engin is currently running\n");
+                        if (fmodStudioSystem->isValid()) {
+                            Msg("AdaptiveMusic Plugin - FMOD engine is currently running\n");
                         } else {
                             Msg("AdaptiveMusic Plugin - FMOD engine is not currently running\n");
                         }
-                        return;
+                        RETURN_META(MRES_SUPERCEDE);
+                    }
+                    if (strcmp(arg2, "loadbank") == 0) {
+                        if (args.ArgC() > 3 && strcmp(args.Arg(3), "") != 0) {
+                            g_AdaptiveMusicPlugin.LoadFMODBank(args.Arg(3));
+                            RETURN_META(MRES_SUPERCEDE);
+                        }
+                        META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine\n");
+                        META_CONPRINTF("usage: amp fmod loadbank <bankname>\n");
+                        RETURN_META(MRES_SUPERCEDE);
+                    }
+                    if (strcmp(arg2, "startevent") == 0) {
+                        if (args.ArgC() > 3 && strcmp(args.Arg(3), "") != 0) {
+                            g_AdaptiveMusicPlugin.StartFMODEvent(args.Arg(3));
+                            RETURN_META(MRES_SUPERCEDE);
+                        }
+                        META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine\n");
+                        META_CONPRINTF("usage: amp fmod startevent <eventpath>\n");
+                        RETURN_META(MRES_SUPERCEDE);
+                    }
+                    if (strcmp(arg2, "stopevent") == 0) {
+                        if (args.ArgC() > 3 && strcmp(args.Arg(3), "") != 0) {
+                            g_AdaptiveMusicPlugin.StopFMODEvent(args.Arg(3));
+                            RETURN_META(MRES_SUPERCEDE);
+                        }
+                        META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine\n");
+                        META_CONPRINTF("usage: amp fmod stopevent <eventpath>\n");
+                        RETURN_META(MRES_SUPERCEDE);
                     }
                 }
                 META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine\n");
                 META_CONPRINTF("usage: amp fmod <subcommand>\n");
-                META_CONPRINTF("  help - This list of commands\n");
-                META_CONPRINTF("  status - This list of commands\n");
-                return;
+                META_CONPRINTF("                help - This list of subcommands\n");
+                META_CONPRINTF("                status - Show the status of the FMOD engine\n");
+                META_CONPRINTF("                loadbank <bankname> - Load an FMOD bank\n");
+                META_CONPRINTF("                startevent <eventpath> - Start an FMOD event\n");
+                META_CONPRINTF("                stopevent <eventpath> - Stop an FMOD event\n");
+                RETURN_META(MRES_SUPERCEDE);
             }
         }
         META_CONPRINTF("AdaptiveMusic Plugin\n");
         META_CONPRINTF("usage: amp <command>\n");
-        META_CONPRINTF("  help - This list of commands\n");
-        META_CONPRINTF("  fmod - FMOD engine commands\n");
-        return;
+        META_CONPRINTF("           help - This list of commands\n");
+        META_CONPRINTF("           fmod <subcommand> - FMOD engine commands\n");
+        RETURN_META(MRES_SUPERCEDE);
     }
 }
 
@@ -335,6 +365,8 @@ const char *CAdaptiveMusicPlugin::GetURL() {
 // FMOD "client" specific methods
 //-----------------------------------------------------------------------------
 
+//// START HELPER FUNCTIONS
+
 //-----------------------------------------------------------------------------
 // Purpose: Concatenate 2 strings together
 // Input:
@@ -356,6 +388,23 @@ const char *Concatenate(const char *str1, const char *str2) {
         result[len1 + i] = str2[i];
     result[len1 + len2] = '\0';
     return result;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Helper method to sanitize the name of an FMOD Bank, adding ".bank" if it's not already present
+// Input: The FMOD Bank name to sanitize
+// Output: The sanitized Bank name (same as the initial if it was already ending with ".bank")
+//-----------------------------------------------------------------------------
+const char *SanitizeBankName(const char *bankName) {
+    const char *bankExtension = ".bank";
+    size_t bankNameLength = strlen(bankName);
+    size_t bankExtensionLength = strlen(bankExtension);
+    if (bankNameLength >= bankExtensionLength &&
+        Q_strcmp(bankName + bankNameLength - bankExtensionLength, bankExtension)
+        == 0) {
+        return bankName;
+    }
+    return Concatenate(bankName, bankExtension);
 }
 
 //// END HELPER FUNCTIONS
@@ -390,7 +439,8 @@ int CAdaptiveMusicPlugin::StopFMODEngine() {
     FMOD_RESULT result;
     result = fmodStudioSystem->release();
     if (result != FMOD_OK) {
-        Error("AdaptiveMusic Plugin - FMOD engine could not be released (%d): %s\n", result, FMOD_ErrorString(result));
+        META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine could not be released (%d): %s\n", result,
+                       FMOD_ErrorString(result));
         return (result);
     }
     META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine successfully stopped\n");
@@ -398,30 +448,21 @@ int CAdaptiveMusicPlugin::StopFMODEngine() {
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Provide a console command to print the FMOD Engine Status
+// Purpose: Get the path of a Bank file in the /sound/fmod/banks folder from the GamePath
+// Input: The FMOD Bank name to locate
+// Output: The FMOD Bank's full path from the file system
 //-----------------------------------------------------------------------------
-
-/*
-CON_COMMAND_F(fmod_getstatus, "FMOD: Get current status of the FMOD Engine", FCVAR_NONE) {
-    bool isValid = fmodStudioSystem->isValid();
-    if (isValid) {
-        META_CONPRINTF("FMOD Client - Engine is currently running\n");
-    } else {
-        META_CONPRINTF("FMOD Client - Engine is not running\n");
+const char *CAdaptiveMusicPlugin::GetFMODBankPath(const char *bankName) {
+    const char *sanitizedBankName = SanitizeBankName(bankName);
+    char *bankPath = new char[512];
+    Q_snprintf(bankPath, 512, "%s/sound/fmod/banks/%s", ismm->GetBaseDir(), sanitizedBankName);
+    // convert backwards slashes to forward slashes
+    for (int i = 0; i < 512; i++) {
+        if (bankPath[i] == '\\')
+            bankPath[i] = '/';
     }
+    return bankPath;
 }
-*/
-/*
-void CC_GetStatus() {
-    bool isValid = fmodStudioSystem->isValid();
-    if (isValid) {
-        Msg("FMOD Client - Engine is currently running\n");
-    } else {
-        Msg("FMOD Client - Engine is not running\n");
-    }
-}
-
-ConCommand getStatus("fmod_getstatus", CC_GetStatus, "FMOD: Get current status of the FMOD Manager");
 
 //-----------------------------------------------------------------------------
 // Purpose: Load an FMOD Bank
@@ -429,61 +470,36 @@ ConCommand getStatus("fmod_getstatus", CC_GetStatus, "FMOD: Get current status o
 // Output: The error code (or 0 if no error was encountered)
 //-----------------------------------------------------------------------------
 int CAdaptiveMusicPlugin::LoadFMODBank(const char *bankName) {
-    if (loadedFmodStudioBankName != nullptr && (strcmp(bankName, loadedFmodStudioBankName) == 0)) {
+    if (loadedFMODStudioBankName != nullptr && (strcmp(bankName, loadedFMODStudioBankName) == 0)) {
         // Bank is already loaded
-        Log("FMOD Client - Bank requested for loading but already loaded (%s)\n", bankName);
+        META_CONPRINTF("AdaptiveMusic Plugin - FMOD bank requested for loading but already loaded: %s\n", bankName);
     } else {
         // Load the requested bank
         const char *bankPath = CAdaptiveMusicPlugin::GetFMODBankPath(bankName);
         FMOD_RESULT result;
         result = fmodStudioSystem->loadBankFile(bankPath, FMOD_STUDIO_LOAD_BANK_NORMAL,
-                                                &loadedFmodStudioBank);
+                                                &loadedFMODStudioBank);
         if (result != FMOD_OK) {
-            Warning("FMOD Client - Could not load Bank (%s). Error: (%d) %s\n", bankName, result,
-                    FMOD_ErrorString(result));
+            META_CONPRINTF("AdaptiveMusic Plugin - Could not load FMOD bank: %s. Error (%d): %s\n", bankName, result,
+                           FMOD_ErrorString(result));
             return (-1);
         }
         const char *bankStringsName = Concatenate(bankName, ".strings");
         result = fmodStudioSystem->loadBankFile(CAdaptiveMusicPlugin::GetFMODBankPath(bankStringsName),
                                                 FMOD_STUDIO_LOAD_BANK_NORMAL,
-                                                &loadedFmodStudioStringsBank);
+                                                &loadedFMODStudioStringsBank);
         if (result != FMOD_OK) {
-            Warning("FMOD Client - Could not load Strings Bank (%s). Error: (%d) %s\n", bankStringsName, result,
-                    FMOD_ErrorString(result));
+            META_CONPRINTF("AdaptiveMusic Plugin - Could not load FMOD bank: %s. Error (%d): %\n", bankStringsName,
+                           result,
+                           FMOD_ErrorString(result));
             return (-1);
         }
-        Log("FMOD Client - Bank successfully loaded (%s)\n", bankName);
-        delete[] loadedFmodStudioBankName;
-        loadedFmodStudioBankName = new char[strlen(bankName) + 1];
-        strcpy(loadedFmodStudioBankName, bankName);
-        return (0);
+        META_CONPRINTF("AdaptiveMusic Plugin - Bank successfully loaded: %s\n", bankName);
+        delete[] loadedFMODStudioBankName;
+        loadedFMODStudioBankName = new char[strlen(bankName) + 1];
+        strcpy(loadedFMODStudioBankName, bankName);
     }
-
     return (0);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Provide a console command to load a FMOD Bank
-// Input: The name of the FMOD Bank to load as ConCommand argument
-//-----------------------------------------------------------------------------
-void CC_LoadFMODBank(const CCommand &args) {
-    if (args.ArgC() < 1 || strcmp(args.Arg(1), "") == 0) {
-        Msg("Usage: fmod_loadbank <bankname>\n");
-        return;
-    }
-    g_AdaptiveMusicPlugin.LoadFMODBank(args.Arg(1));
-}
-
-ConCommand loadBank("fmod_loadbank", CC_LoadFMODBank, "FMOD: Load a bank");
-
-//-----------------------------------------------------------------------------
-// Purpose: Provide a UserMessage handler to load a FMOD Bank
-// Input: The name of the FMOD Bank to load
-//-----------------------------------------------------------------------------
-void MsgFunc_LoadFMODBank(bf_read &msg) {
-    char szString[256];
-    msg.ReadString(szString, sizeof(szString));
-    g_AdaptiveMusicPlugin.LoadFMODBank(szString);
 }
 
 //-----------------------------------------------------------------------------
@@ -492,56 +508,32 @@ void MsgFunc_LoadFMODBank(bf_read &msg) {
 // Output: The error code (or 0 if no error was encountered)
 //-----------------------------------------------------------------------------
 int CAdaptiveMusicPlugin::StartFMODEvent(const char *eventPath) {
-    if (loadedFmodStudioEventPath != nullptr && (Q_strcmp(eventPath, loadedFmodStudioEventPath) == 0)) {
+    if (loadedFMODStudioEventPath != nullptr && (Q_strcmp(eventPath, loadedFMODStudioEventPath) == 0)) {
         // Event is already loaded
-        Log("FMOD Client - Event requested for loading but already loaded (%s)\n", eventPath);
+        META_CONPRINTF("AdaptiveMusic Plugin - Event requested for loading but already loaded (%s)\n", eventPath);
     } else {
         // Event is new
-        if (loadedFmodStudioEventPath != nullptr && (Q_strcmp(loadedFmodStudioEventPath, "") != 0)) {
+        if (loadedFMODStudioEventPath != nullptr && (Q_strcmp(loadedFMODStudioEventPath, "") != 0)) {
             // Stop the currently playing event
-            StopFMODEvent(loadedFmodStudioEventPath);
+            StopFMODEvent(loadedFMODStudioEventPath);
         }
         const char *fullEventPath = Concatenate("event:/", eventPath);
         FMOD_RESULT result;
-        result = fmodStudioSystem->getEvent(fullEventPath, &loadedFmodStudioEventDescription);
-        result = loadedFmodStudioEventDescription->createInstance(&createdFmodStudioEventInstance);
-        result = createdFmodStudioEventInstance->start();
+        result = fmodStudioSystem->getEvent(fullEventPath, &loadedFMODStudioEventDescription);
+        result = loadedFMODStudioEventDescription->createInstance(&createdFMODStudioEventInstance);
+        result = createdFMODStudioEventInstance->start();
         fmodStudioSystem->update();
         if (result != FMOD_OK) {
-            Warning("FMOD Client - Could not start Event (%s). Error: (%d) %s\n", eventPath, result,
-                    FMOD_ErrorString(result));
+            META_CONPRINTF("AdaptiveMusic Plugin - Could not start Event (%s). Error: (%d) %s\n", eventPath, result,
+                           FMOD_ErrorString(result));
             return (-1);
         }
-        Log("FMOD Client - Event successfully started (%s)\n", eventPath);
-        delete[] loadedFmodStudioEventPath;
-        loadedFmodStudioEventPath = new char[strlen(eventPath) + 1];
-        strcpy(loadedFmodStudioEventPath, eventPath);
+        META_CONPRINTF("AdaptiveMusic Plugin - Event successfully started (%s)\n", eventPath);
+        delete[] loadedFMODStudioEventPath;
+        loadedFMODStudioEventPath = new char[strlen(eventPath) + 1];
+        strcpy(loadedFMODStudioEventPath, eventPath);
     }
     return (0);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Provide a console command to start an FMOD Event
-// Input: The name of the FMOD Event to start as ConCommand argument
-//-----------------------------------------------------------------------------
-void CC_StartFMODEvent(const CCommand &args) {
-    if (args.ArgC() < 1 || Q_strcmp(args.Arg(1), "") == 0) {
-        Msg("Usage: fmod_startevent <eventpath>\n");
-        return;
-    }
-    g_AdaptiveMusicPlugin.StartFMODEvent(args.Arg(1));
-}
-
-ConCommand startEvent("fmod_startevent", CC_StartFMODEvent, "FMOD: Start an event");
-
-//-----------------------------------------------------------------------------
-// Purpose: Provide a UserMessage handler to start an FMOD Event
-// Input: The name of the FMOD Event to start
-//-----------------------------------------------------------------------------
-void MsgFunc_StartFMODEvent(bf_read &msg) {
-    char szString[256];
-    msg.ReadString(szString, sizeof(szString));
-    g_AdaptiveMusicPlugin.StartFMODEvent(szString);
 }
 
 //-----------------------------------------------------------------------------
@@ -552,45 +544,22 @@ void MsgFunc_StartFMODEvent(bf_read &msg) {
 int CAdaptiveMusicPlugin::StopFMODEvent(const char *eventPath) {
     const char *fullEventPath = Concatenate("event:/", eventPath);
     FMOD_RESULT result;
-    result = fmodStudioSystem->getEvent(fullEventPath, &loadedFmodStudioEventDescription);
-    result = loadedFmodStudioEventDescription->releaseAllInstances();
+    result = fmodStudioSystem->getEvent(fullEventPath, &loadedFMODStudioEventDescription);
+    result = loadedFMODStudioEventDescription->releaseAllInstances();
     fmodStudioSystem->update();
     if (result != FMOD_OK) {
-        Warning("FMOD Client - Could not stop Event (%s). Error: (%d) %s\n", eventPath, result,
-                FMOD_ErrorString(result));
+        META_CONPRINTF("AdaptiveMusic Plugin - Could not stop Event (%s). Error: (%d) %s\n", eventPath, result,
+                       FMOD_ErrorString(result));
         return (-1);
     }
-    Log("FMOD Client - Event successfully stopped (%s)\n", eventPath);
-    delete[] loadedFmodStudioEventPath;
-    loadedFmodStudioEventPath = new char[strlen("") + 1];
-    strcpy(loadedFmodStudioEventPath, "");
+    META_CONPRINTF("AdaptiveMusic Plugin - Event successfully stopped (%s)\n", eventPath);
+    delete[] loadedFMODStudioEventPath;
+    loadedFMODStudioEventPath = new char[strlen("") + 1];
+    strcpy(loadedFMODStudioEventPath, "");
     return (0);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Provide a console command to stop an FMOD Event
-// Input: The name of the FMOD Event to load as ConCommand argument
-//-----------------------------------------------------------------------------
-void CC_StopFMODEvent(const CCommand &args) {
-    if (args.ArgC() < 1 || Q_strcmp(args.Arg(1), "") == 0) {
-        Msg("Usage: fmod_stopevent <eventpath>\n");
-        return;
-    }
-    g_AdaptiveMusicPlugin.StopFMODEvent(args.Arg(1));
-}
-
-ConCommand stopEvent("fmod_stopevent", CC_StopFMODEvent, "FMOD: Stop an event");
-
-//-----------------------------------------------------------------------------
-// Purpose: Provide a UserMessage handler to stop an FMOD Event
-// Input: The name of the FMOD Event to stop
-//-----------------------------------------------------------------------------
-void MsgFunc_StopFMODEvent(bf_read &msg) {
-    char szString[256];
-    msg.ReadString(szString, sizeof(szString));
-    g_AdaptiveMusicPlugin.StopFMODEvent(szString);
-}
-
+/*
 //-----------------------------------------------------------------------------
 // Purpose: Set the value for a global FMOD Parameter
 // Input:
@@ -604,11 +573,12 @@ int CAdaptiveMusicPlugin::SetFMODGlobalParameter(const char *parameterName, floa
     result = fmodStudioSystem->setParameterByName(parameterName, value);
     fmodStudioSystem->update();
     if (result != FMOD_OK) {
-        Warning("FMOD Client - Could not set Global Parameter value (%s) (%f). Error: (%d) %s\n", parameterName, value,
-                result, FMOD_ErrorString(result));
+        META_CONPRINTF("AdaptiveMusic Plugin - Could not set Global Parameter value (%s) (%f). Error: (%d) %s\n",
+                       parameterName, value,
+                       result, FMOD_ErrorString(result));
         return (-1);
     }
-    Log("FMOD Client - Global Parameter %s set to %f\n", parameterName, value);
+    META_CONPRINTF("AdaptiveMusic Plugin - Global Parameter %s set to %f\n", parameterName, value);
     return (0);
 }
 
@@ -643,11 +613,13 @@ void MsgFunc_SetFMODGlobalParameter(bf_read &msg) {
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: TODO
-// Output: TODO
+// Purpose: Pause/Unpause the playback of the engine
+// Input:
+// - pausedState: true if the desired state of the playback is "paused", false otherwise
+// Output: The error code (or 0 if no error was encountered)
 //-----------------------------------------------------------------------------
 int CAdaptiveMusicPlugin::SetFMODPausedState(bool pausedState) {
-    Log("FMOD Client - Setting master bus paused state to %d\n", pausedState);
+    META_CONPRINTF("AdaptiveMusic Plugin - Setting master bus paused state to %d\n", pausedState);
     FMOD::Studio::Bus *bus;
     FMOD_RESULT result;
     result = fmodStudioSystem->getBus("bus:/", &bus);
@@ -665,37 +637,4 @@ int CAdaptiveMusicPlugin::SetFMODPausedState(bool pausedState) {
     return (0);
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Sanitize the name of an FMOD Bank, adding ".bank" if it's not already present
-// Input: The FMOD Bank name to sanitize
-// Output: The sanitized Bank name (same as the initial if it was already ending with ".bank")
-//-----------------------------------------------------------------------------
-const char *SanitizeBankName(const char *bankName) {
-    const char *bankExtension = ".bank";
-    size_t bankNameLength = strlen(bankName);
-    size_t bankExtensionLength = strlen(bankExtension);
-    if (bankNameLength >= bankExtensionLength &&
-        Q_strcmp(bankName + bankNameLength - bankExtensionLength, bankExtension)
-        == 0) {
-        return bankName;
-    }
-    return Concatenate(bankName, bankExtension);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Get the path of a Bank file in the /sound/fmod/banks folder
-// Input: The FMOD Bank name to locate
-// Output: The FMOD Bank's full path from the file system
-//-----------------------------------------------------------------------------
-const char *CAdaptiveMusicPlugin::GetFMODBankPath(const char *bankName) {
-    const char *sanitizedBankName = SanitizeBankName(bankName);
-    char *bankPath = new char[512];
-    Q_snprintf(bankPath, 512, "%s/sound/fmod/banks/%s", ismm->GetBaseDir(), sanitizedBankName);
-    // convert backwards slashes to forward slashes
-    for (int i = 0; i < 512; i++) {
-        if (bankPath[i] == '\\')
-            bankPath[i] = '/';
-    }
-    return bankPath;
-}
 */
