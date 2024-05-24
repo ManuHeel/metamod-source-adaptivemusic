@@ -24,7 +24,6 @@
 #endif
 
 // FMOD global variables
-FMOD::Studio::System *fmodStudioSystem;
 FMOD::Studio::Bank *loadedFmodStudioBank;
 char *loadedFmodStudioBankName;
 FMOD::Studio::Bank *loadedFmodStudioStringsBank;
@@ -38,6 +37,9 @@ const char *startedEventPath;
 
 class CAdaptiveMusicPlugin : public ISmmPlugin, public IMetamodListener {
 
+protected:
+    FMOD::Studio::System *fmodStudioSystem;
+
 public:
     bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late);
 
@@ -49,10 +51,10 @@ public:
 
     void AllPluginsLoaded();
 
-public: //IMetamodListener stuff
+public: // IMetamodListener
     void OnVSPListening(IServerPluginCallbacks *iface);
 
-public: //hooks
+public: // Hooks
     void Hook_ServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 
     bool Hook_LevelInit(const char *pMapName,
@@ -106,12 +108,12 @@ public:
     const char *GetDate();
 
     const char *GetLogTag();
-/*
+
 public:
     int StartFMODEngine();
 
     int StopFMODEngine();
-
+/*
     int LoadFMODBank(const char *bankName);
 
     int StartFMODEvent(const char *eventPath);

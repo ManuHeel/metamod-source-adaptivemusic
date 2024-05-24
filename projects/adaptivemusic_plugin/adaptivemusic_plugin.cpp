@@ -14,19 +14,32 @@
 #include "fmod_errors.h"
 
 // Hooks
-SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, 0, bool, char const *, char const *, char const *, char const *, bool, bool);
+SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, 0, bool, char const *, char const *, char const *, char const *,
+              bool, bool);
+
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
+
 SH_DECL_HOOK1_void(IServerGameDLL, GameFrame, SH_NOATTRIB, 0, bool);
+
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, 0);
+
 SH_DECL_HOOK2_void(IServerGameClients, ClientActive, SH_NOATTRIB, 0, edict_t *, bool);
+
 SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t *);
+
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, char const *);
+
 SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, 0, int);
+
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
-SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char*, const char *, char *, int);
+
+SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char*, const char *, char *,
+              int);
+
 SH_DECL_HOOK2(IGameEventManager2, FireEvent, SH_NOATTRIB, 0, bool, IGameEvent *, bool);
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
+
 SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *, const CCommand &);
 #else
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
@@ -48,19 +61,17 @@ ConVar sample_cvar("sample_cvar", "42", 0);
 /**
  * Something like this is needed to register cvars/CON_COMMANDs.
  */
-class BaseAccessor : public IConCommandBaseAccessor
-{
+class BaseAccessor : public IConCommandBaseAccessor {
 public:
-    bool RegisterConCommandBase(ConCommandBase *pCommandBase)
-    {
+    bool RegisterConCommandBase(ConCommandBase *pCommandBase) {
         /* Always call META_REGCVAR instead of going through the engine. */
         return META_REGCVAR(pCommandBase);
     }
 } s_BaseAccessor;
 
 PLUGIN_EXPOSE(AdaptiveMusicPlugin, g_AdaptiveMusicPlugin);
-bool CAdaptiveMusicPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
-{
+
+bool CAdaptiveMusicPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late) {
     PLUGIN_SAVEVARS();
 
     GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
@@ -73,11 +84,8 @@ bool CAdaptiveMusicPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t 
 
     gpGlobals = ismm->GetCGlobals();
 
-    META_LOG(g_PLAPI, "Starting plugin.");
-
     /* Load the VSP listener.  This is usually needed for IServerPluginHelpers. */
-    if ((vsp_callbacks = ismm->GetVSPInfo(NULL)) == NULL)
-    {
+    if ((vsp_callbacks = ismm->GetVSPInfo(NULL)) == NULL) {
         ismm->AddListener(this, this);
         ismm->EnableVSPListener();
     }
@@ -86,15 +94,22 @@ bool CAdaptiveMusicPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t 
     SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, server, this, &CAdaptiveMusicPlugin::Hook_ServerActivate, true);
     SH_ADD_HOOK_MEMFUNC(IServerGameDLL, GameFrame, server, this, &CAdaptiveMusicPlugin::Hook_GameFrame, true);
     SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, server, this, &CAdaptiveMusicPlugin::Hook_LevelShutdown, false);
-    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientActive, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientActive, true);
-    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientDisconnect, true);
-    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientPutInServer, true);
-    SH_ADD_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, gameclients, this, &CAdaptiveMusicPlugin::Hook_SetCommandClient, true);
-    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientSettingsChanged, false);
-    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientConnect, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientConnect, false);
-    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientCommand, false);
+    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientActive, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientActive,
+                        true);
+    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, gameclients, this,
+                        &CAdaptiveMusicPlugin::Hook_ClientDisconnect, true);
+    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, gameclients, this,
+                        &CAdaptiveMusicPlugin::Hook_ClientPutInServer, true);
+    SH_ADD_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, gameclients, this,
+                        &CAdaptiveMusicPlugin::Hook_SetCommandClient, true);
+    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, gameclients, this,
+                        &CAdaptiveMusicPlugin::Hook_ClientSettingsChanged, false);
+    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientConnect, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientConnect,
+                        false);
+    SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientCommand,
+                        false);
 
-    ENGINE_CALL(LogPrint)("All hooks started!\n");
+    //ENGINE_CALL(LogPrint)("All hooks started!\n");
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
     g_pCVar = icvar;
@@ -103,52 +118,59 @@ bool CAdaptiveMusicPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t 
     ConCommandBaseMgr::OneTimeInit(&s_BaseAccessor);
 #endif
 
+    META_CONPRINTF("AdaptiveMusic Plugin - Plugin successfully started\n");
+
     // Start the FMOD engine
-    // StartFMODEngine();
-
-	return true;
-}
-
-bool CAdaptiveMusicPlugin::Unload(char *error, size_t maxlen)
-{
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, server, this, &CAdaptiveMusicPlugin::Hook_LevelInit, true);
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, server, this, &CAdaptiveMusicPlugin::Hook_ServerActivate, true);
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, GameFrame, server, this, &CAdaptiveMusicPlugin::Hook_GameFrame, true);
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, server, this, &CAdaptiveMusicPlugin::Hook_LevelShutdown, false);
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientActive, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientActive, true);
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientDisconnect, true);
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientPutInServer, true);
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, gameclients, this, &CAdaptiveMusicPlugin::Hook_SetCommandClient, true);
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientSettingsChanged, false);
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientConnect, false);
-    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientCommand, gameclients, this, &CAdaptiveMusicPlugin::Hook_ClientCommand, false);
+    StartFMODEngine();
 
     return true;
 }
 
-void CAdaptiveMusicPlugin::OnVSPListening(IServerPluginCallbacks *iface)
-{
+bool CAdaptiveMusicPlugin::Unload(char *error, size_t maxlen) {
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, server, this, &CAdaptiveMusicPlugin::Hook_LevelInit, true);
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, server, this, &CAdaptiveMusicPlugin::Hook_ServerActivate,
+                           true);
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, GameFrame, server, this, &CAdaptiveMusicPlugin::Hook_GameFrame, true);
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, server, this, &CAdaptiveMusicPlugin::Hook_LevelShutdown,
+                           false);
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientActive, gameclients, this,
+                           &CAdaptiveMusicPlugin::Hook_ClientActive, true);
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, gameclients, this,
+                           &CAdaptiveMusicPlugin::Hook_ClientDisconnect, true);
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, gameclients, this,
+                           &CAdaptiveMusicPlugin::Hook_ClientPutInServer, true);
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, gameclients, this,
+                           &CAdaptiveMusicPlugin::Hook_SetCommandClient, true);
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, gameclients, this,
+                           &CAdaptiveMusicPlugin::Hook_ClientSettingsChanged, false);
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, gameclients, this,
+                           &CAdaptiveMusicPlugin::Hook_ClientConnect, false);
+    SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientCommand, gameclients, this,
+                           &CAdaptiveMusicPlugin::Hook_ClientCommand, false);
+
+    return true;
+}
+
+void CAdaptiveMusicPlugin::OnVSPListening(IServerPluginCallbacks *iface) {
     vsp_callbacks = iface;
 }
 
-void CAdaptiveMusicPlugin::Hook_ServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
-{
+void CAdaptiveMusicPlugin::Hook_ServerActivate(edict_t *pEdictList, int edictCount, int clientMax) {
     META_LOG(g_PLAPI, "ServerActivate() called: edictCount = %d, clientMax = %d", edictCount, clientMax);
 }
 
-void CAdaptiveMusicPlugin::AllPluginsLoaded()
-{
+void CAdaptiveMusicPlugin::AllPluginsLoaded() {
     /* This is where we'd do stuff that relies on the mod or other plugins
      * being initialized (for example, cvars added and events registered).
      */
 }
 
-void CAdaptiveMusicPlugin::Hook_ClientActive(edict_t *pEntity, bool bLoadGame)
-{
+void CAdaptiveMusicPlugin::Hook_ClientActive(edict_t *pEntity, bool bLoadGame) {
     META_LOG(g_PLAPI, "Hook_ClientActive(%d, %d)", IndexOfEdict(pEntity), bLoadGame);
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
+
 void CAdaptiveMusicPlugin::Hook_ClientCommand(edict_t *pEntity, const CCommand &args)
 #else
 void CAdaptiveMusicPlugin::Hook_ClientCommand(edict_t *pEntity)
@@ -158,79 +180,47 @@ void CAdaptiveMusicPlugin::Hook_ClientCommand(edict_t *pEntity)
     CCommand args;
 #endif
 
-    if (!pEntity || pEntity->IsFree())
-    {
+    if (!pEntity || pEntity->IsFree()) {
         return;
     }
 
     const char *cmd = args.Arg(0);
-    if (strcmp(cmd, "menu") == 0)
-    {
-        KeyValues *kv = new KeyValues("menu");
-        kv->SetString("title", "You've got options, hit ESC");
-        kv->SetInt("level", 1);
-        kv->SetColor("color", Color(255, 0, 0, 255));
-        kv->SetInt("time", 20);
-        kv->SetString("msg", "Pick an option\nOr don't.");
 
-        for (int i = 1; i < 9; i++)
-        {
-            char num[10], msg[10], cmd[10];
-            MM_Format( num, sizeof(num), "%i", i );
-            MM_Format( msg, sizeof(msg), "Option %i", i );
-            MM_Format( cmd, sizeof(cmd), "option %i", i );
-
-            KeyValues *item1 = kv->FindKey(num, true);
-            item1->SetString("msg", msg);
-            item1->SetString("command", cmd);
+    if (strcmp(cmd, "amp") == 0) {
+        // amp commands
+        if (args.ArgC() > 1 && strcmp(args.Arg(1), "") != 0) {
+            const char *arg1 = args.Arg(1);
+            if (strcmp(arg1, "fmod") == 0) {
+                // amp fmod commands
+                if (args.ArgC() > 2 && strcmp(args.Arg(2), "") != 0) {
+                    const char *arg2 = args.Arg(2);
+                    if (strcmp(arg2, "status") == 0) {
+                        if (this->fmodStudioSystem->isValid()) {
+                            Msg("AdaptiveMusic Plugin - FMOD engin is currently running\n");
+                        } else {
+                            Msg("AdaptiveMusic Plugin - FMOD engine is not currently running\n");
+                        }
+                        return;
+                    }
+                }
+                META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine\n");
+                META_CONPRINTF("usage: amp fmod <subcommand>\n");
+                META_CONPRINTF("  help - This list of commands\n");
+                META_CONPRINTF("  status - This list of commands\n");
+                return;
+            }
         }
-
-        helpers->CreateMessage(pEntity, DIALOG_MENU, kv, vsp_callbacks);
-        kv->deleteThis();
-        RETURN_META(MRES_SUPERCEDE);
-    }
-    else if (strcmp(cmd, "rich") == 0)
-    {
-        KeyValues *kv = new KeyValues("menu");
-        kv->SetString("title", "A rich message");
-        kv->SetInt("level", 1);
-        kv->SetInt("time", 20);
-        kv->SetString("msg", "This is a long long long text string.\n\nIt also has line breaks.");
-
-        helpers->CreateMessage(pEntity, DIALOG_TEXT, kv, vsp_callbacks);
-        kv->deleteThis();
-        RETURN_META(MRES_SUPERCEDE);
-    }
-    else if (strcmp(cmd, "msg") == 0)
-    {
-        KeyValues *kv = new KeyValues("menu");
-        kv->SetString("title", "Just a simple hello");
-        kv->SetInt("level", 1);
-        kv->SetInt("time", 20);
-
-        helpers->CreateMessage(pEntity, DIALOG_MSG, kv, vsp_callbacks);
-        kv->deleteThis();
-        RETURN_META(MRES_SUPERCEDE);
-    }
-    else if (strcmp(cmd, "entry") == 0)
-    {
-        KeyValues *kv = new KeyValues("entry");
-        kv->SetString("title", "Stuff");
-        kv->SetString("msg", "Enter something");
-        kv->SetString("command", "say"); // anything they enter into the dialog turns into a say command
-        kv->SetInt("level", 1);
-        kv->SetInt("time", 20);
-
-        helpers->CreateMessage(pEntity, DIALOG_ENTRY, kv, vsp_callbacks);
-        kv->deleteThis();
-        RETURN_META(MRES_SUPERCEDE);
+        META_CONPRINTF("AdaptiveMusic Plugin\n");
+        META_CONPRINTF("usage: amp <command>\n");
+        META_CONPRINTF("  help - This list of commands\n");
+        META_CONPRINTF("  fmod - FMOD engine commands\n");
+        return;
     }
 }
 
-void CAdaptiveMusicPlugin::Hook_ClientSettingsChanged(edict_t *pEdict)
-{
-    if (playerinfomanager)
-    {
+void CAdaptiveMusicPlugin::Hook_ClientSettingsChanged(edict_t *pEdict) {
+    /*
+    if (playerinfomanager) {
         IPlayerInfo *playerinfo = playerinfomanager->GetPlayerInfo(pEdict);
 
         const char *name = engine->GetClientConVarValue(IndexOfEdict(pEdict), "name");
@@ -239,45 +229,41 @@ void CAdaptiveMusicPlugin::Hook_ClientSettingsChanged(edict_t *pEdict)
             && name != NULL
             && strcmp(engine->GetPlayerNetworkIDString(pEdict), "BOT") != 0
             && playerinfo->GetName() != NULL
-            && strcmp(name, playerinfo->GetName()) == 0)
-        {
+            && strcmp(name, playerinfo->GetName()) == 0) {
             char msg[128];
             MM_Format(msg, sizeof(msg), "Your name changed to \"%s\" (from \"%s\")\n", name, playerinfo->GetName());
             engine->ClientPrintf(pEdict, msg);
         }
     }
+     */
 }
 
 bool CAdaptiveMusicPlugin::Hook_ClientConnect(edict_t *pEntity,
-                                      const char *pszName,
-                                      const char *pszAddress,
-                                      char *reject,
-                                      int maxrejectlen)
-{
+                                              const char *pszName,
+                                              const char *pszAddress,
+                                              char *reject,
+                                              int maxrejectlen) {
     META_LOG(g_PLAPI, "Hook_ClientConnect(%d, \"%s\", \"%s\")", IndexOfEdict(pEntity), pszName, pszAddress);
 
     return true;
 }
 
-void CAdaptiveMusicPlugin::Hook_ClientPutInServer(edict_t *pEntity, char const *playername)
-{
-    KeyValues *kv = new KeyValues( "msg" );
-    kv->SetString( "title", "Hello" );
-    kv->SetString( "msg", "Hello there" );
-    kv->SetColor( "color", Color( 255, 0, 0, 255 ));
-    kv->SetInt( "level", 5);
-    kv->SetInt( "time", 10);
+void CAdaptiveMusicPlugin::Hook_ClientPutInServer(edict_t *pEntity, char const *playername) {
+    KeyValues *kv = new KeyValues("msg");
+    kv->SetString("title", "AdaptiveMusic Plugin loaded");
+    kv->SetString("msg", "AdaptiveMusic Plugin loaded");
+    kv->SetColor("color", Color(0, 0, 0, 255));
+    kv->SetInt("level", 5);
+    kv->SetInt("time", 10);
     helpers->CreateMessage(pEntity, DIALOG_MSG, kv, vsp_callbacks);
     kv->deleteThis();
 }
 
-void CAdaptiveMusicPlugin::Hook_ClientDisconnect(edict_t *pEntity)
-{
+void CAdaptiveMusicPlugin::Hook_ClientDisconnect(edict_t *pEntity) {
     META_LOG(g_PLAPI, "Hook_ClientDisconnect(%d)", IndexOfEdict(pEntity));
 }
 
-void CAdaptiveMusicPlugin::Hook_GameFrame(bool simulating)
-{
+void CAdaptiveMusicPlugin::Hook_GameFrame(bool simulating) {
     /**
      * simulating:
      * ***********
@@ -287,75 +273,62 @@ void CAdaptiveMusicPlugin::Hook_GameFrame(bool simulating)
 }
 
 bool CAdaptiveMusicPlugin::Hook_LevelInit(const char *pMapName,
-                                  char const *pMapEntities,
-                                  char const *pOldLevel,
-                                  char const *pLandmarkName,
-                                  bool loadGame,
-                                  bool background)
-{
+                                          char const *pMapEntities,
+                                          char const *pOldLevel,
+                                          char const *pLandmarkName,
+                                          bool loadGame,
+                                          bool background) {
     META_LOG(g_PLAPI, "Hook_LevelInit(%s)", pMapName);
 
     return true;
 }
 
-void CAdaptiveMusicPlugin::Hook_LevelShutdown()
-{
+void CAdaptiveMusicPlugin::Hook_LevelShutdown() {
     META_LOG(g_PLAPI, "Hook_LevelShutdown()");
 }
 
-void CAdaptiveMusicPlugin::Hook_SetCommandClient(int index)
-{
+void CAdaptiveMusicPlugin::Hook_SetCommandClient(int index) {
     META_LOG(g_PLAPI, "Hook_SetCommandClient(%d)", index);
 }
 
-bool CAdaptiveMusicPlugin::Pause(char *error, size_t maxlen)
-{
-	return true;
+bool CAdaptiveMusicPlugin::Pause(char *error, size_t maxlen) {
+    return true;
 }
 
-bool CAdaptiveMusicPlugin::Unpause(char *error, size_t maxlen)
-{
-	return true;
+bool CAdaptiveMusicPlugin::Unpause(char *error, size_t maxlen) {
+    return true;
 }
 
-const char *CAdaptiveMusicPlugin::GetLicense()
-{
-	return "idk yet";
+const char *CAdaptiveMusicPlugin::GetLicense() {
+    return "idk yet";
 }
 
-const char *CAdaptiveMusicPlugin::GetVersion()
-{
-	return "1.0.0.0";
+const char *CAdaptiveMusicPlugin::GetVersion() {
+    return "1.0.0.0";
 }
 
-const char *CAdaptiveMusicPlugin::GetDate()
-{
-	return __DATE__;
+const char *CAdaptiveMusicPlugin::GetDate() {
+    return __DATE__;
 }
 
-const char *CAdaptiveMusicPlugin::GetLogTag()
-{
-	return "ADAPTIVEMUSIC";
+const char *CAdaptiveMusicPlugin::GetLogTag() {
+    return "ADAPTIVEMUSIC";
 }
 
-const char *CAdaptiveMusicPlugin::GetAuthor()
-{
-	return "Manuel Russello";
+const char *CAdaptiveMusicPlugin::GetAuthor() {
+    return "Manuel Russello";
 }
 
-const char *CAdaptiveMusicPlugin::GetDescription()
-{
-	return "AdaptiveMusic Plugin implementing FMOD";
+const char *CAdaptiveMusicPlugin::GetDescription() {
+    return "AdaptiveMusic Plugin implementing FMOD";
 }
 
-const char *CAdaptiveMusicPlugin::GetName()
-{
-	return "AdaptiveMusic Plugin";
+const char *CAdaptiveMusicPlugin::GetName() {
+    return "AdaptiveMusic Plugin";
 }
 
-const char *CAdaptiveMusicPlugin::GetURL()
-{
-	return "https://hl2musicmod.russello.studio/";
+const char *CAdaptiveMusicPlugin::GetURL() {
+    return "https://hl2musicmod.russello.studio/";
 }
 
 //-----------------------------------------------------------------------------
@@ -386,6 +359,43 @@ const char *Concatenate(const char *str1, const char *str2) {
 }
 
 //// END HELPER FUNCTIONS
+
+//-----------------------------------------------------------------------------
+// Purpose: Start the FMOD Studio System and initialize it
+// Output: The error code (or 0 if no error was encountered)
+//-----------------------------------------------------------------------------
+int CAdaptiveMusicPlugin::StartFMODEngine() {
+    FMOD_RESULT result;
+    result = FMOD::Studio::System::create(&fmodStudioSystem);
+    if (result != FMOD_OK) {
+        META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine could not be created (%d): %s\n", result,
+                       FMOD_ErrorString(result));
+        return (result);
+    }
+    result = fmodStudioSystem->initialize(512, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, nullptr);
+    if (result != FMOD_OK) {
+        META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine could not initialize (%d): %s\n", result,
+                       FMOD_ErrorString(result));
+        return (result);
+    }
+    META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine successfully started\n");
+    return (0);
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Stop the FMOD Studio System
+// Output: The error code (or 0 if no error was encountered)
+//-----------------------------------------------------------------------------
+int CAdaptiveMusicPlugin::StopFMODEngine() {
+    FMOD_RESULT result;
+    result = fmodStudioSystem->release();
+    if (result != FMOD_OK) {
+        Error("AdaptiveMusic Plugin - FMOD engine could not be released (%d): %s\n", result, FMOD_ErrorString(result));
+        return (result);
+    }
+    META_CONPRINTF("AdaptiveMusic Plugin - FMOD engine successfully stopped\n");
+    return (0);
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Provide a console command to print the FMOD Engine Status
@@ -630,62 +640,6 @@ void MsgFunc_SetFMODGlobalParameter(bf_read &msg) {
     float szFloat;
     szFloat = msg.ReadFloat();
     g_AdaptiveMusicPlugin.SetFMODGlobalParameter(szString, szFloat);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Start the FMOD Studio System and initialize it
-// Output: The error code (or 0 if no error was encountered)
-//-----------------------------------------------------------------------------
-int CAdaptiveMusicPlugin::StartFMODEngine() {
-    // Startup FMOD Studio System
-    Msg("FMOD Client - Starting Engine\n");
-    FMOD_RESULT result;
-    result = FMOD::Studio::System::create(&fmodStudioSystem);
-    if (result != FMOD_OK) {
-        Error("FMOD Client - Engine error! (%d) %s\n", result, FMOD_ErrorString(result));
-        return (-1);
-    }
-    result = fmodStudioSystem->initialize(512, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, nullptr);
-    if (result != FMOD_OK) {
-        Error("FMOD Client - Engine error! (%d) %s\n", result, FMOD_ErrorString(result));
-        return (-1);
-    }
-    Log("FMOD Client - Engine successfully started\n");
-
-    // Handle the usermessages (registered in hl2_usermessages.cpp)
-    Log("FMOD Client - Hooking up the UserMessages\n");
-    //usermessages->HookMessage("FMODLoadFMODBank", MsgFunc_LoadFMODBank);
-    //usermessages->HookMessage("FMODStartFMODEvent", MsgFunc_StartFMODEvent);
-    //usermessages->HookMessage("FMODStopFMODEvent", MsgFunc_StopFMODEvent);
-    //usermessages->HookMessage("FMODSetFMODGlobalParameter", MsgFunc_SetFMODGlobalParameter);
-    Log("FMOD Client - Successfully hooked up the UserMessages\n");
-
-    // Start the infinitely-looping Client-Side watcher
-    //StartClientSideWatcher();
-    // TODO: Replace this with Pause/Unpause interface methods
-
-    return (0);
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Stop the FMOD Studio System
-// Output: The error code (or 0 if no error was encountered)
-//-----------------------------------------------------------------------------
-int CAdaptiveMusicPlugin::StopFMODEngine() {
-    Msg("FMOD Client - Stopping Engine\n");
-    FMOD_RESULT result;
-    result = fmodStudioSystem->release();
-    if (result != FMOD_OK) {
-        Error("FMOD Client - Engine error! (%d) %s\n", result, FMOD_ErrorString(result));
-        return (-1);
-    }
-    Log("FMOD Client - Engine successfully stopped\n");
-
-    // Stop the infinitely-looping Client-Side watcher
-    // StopClientSideWatcher();
-    // TODO: Replace this with Pause/Unpause interface methods
-
-    return (0);
 }
 
 //-----------------------------------------------------------------------------

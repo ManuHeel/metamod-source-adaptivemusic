@@ -651,7 +651,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(HL2SDKOBVALVE)\lib\public\tier0.lib;$(HL2SDKOBVALVE)\lib\public\tier1.lib;$(HL2SDKOBVALVE)\lib\public\vstdlib.lib;..\..\..\lib\public\fmod_vc.lib;..\..\..\lib\public\fmodL_vc.lib;..\..\..\lib\public\fmodstudio_vc.lib;..\..\..\lib\public\fmodstudioL_vc.lib;..\..\..\lib\public\fsbank_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(HL2SDKOBVALVE)\lib\public\tier0.lib;$(HL2SDKOBVALVE)\lib\public\tier1.lib;$(HL2SDKOBVALVE)\lib\public\vstdlib.lib;$(SolutionDir)\..\..\..\lib\public\fmod_vc.lib;$(SolutionDir)\..\..\..\lib\public\fmodL_vc.lib;$(SolutionDir)\..\..\..\lib\public\fmodstudio_vc.lib;$(SolutionDir)\..\..\..\lib\public\fmodstudioL_vc.lib;$(SolutionDir)\..\..\..\lib\public\fsbank_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)adaptivemusic_plugin.dll</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
