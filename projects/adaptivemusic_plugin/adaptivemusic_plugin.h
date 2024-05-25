@@ -35,9 +35,7 @@ protected:
     FMOD::Studio::EventDescription *loadedFMODStudioEventDescription;
     char *loadedFMODStudioEventPath;
     FMOD::Studio::EventInstance *createdFMODStudioEventInstance;
-
-public: // Core Metamod:Source components
-    ISmmAPI *ismm;
+    bool knownFMODPausedState;
 
 public: // Main Metamod:Source plugins API callbacks
     bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late);

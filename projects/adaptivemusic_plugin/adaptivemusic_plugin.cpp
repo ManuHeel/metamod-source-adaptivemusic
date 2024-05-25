@@ -120,9 +120,6 @@ bool CAdaptiveMusicPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t 
 
     META_CONPRINTF("AdaptiveMusic Plugin - Plugin successfully started\n");
 
-    // Save core elements as object pointers
-    this->ismm = ismm;
-
     // Start the FMOD engine
     StartFMODEngine();
 
@@ -305,12 +302,12 @@ void CAdaptiveMusicPlugin::Hook_ClientDisconnect(edict_t *pEntity) {
 }
 
 void CAdaptiveMusicPlugin::Hook_GameFrame(bool simulating) {
-    /**
-     * simulating:
-     * ***********
-     * true  | game is ticking
-     * false | game is not ticking
-     */
+    if (simulating && knownFMODPausedState) {
+        SetFMODPausedState(false);
+    }
+    if (!simulating && !knownFMODPausedState) {
+        SetFMODPausedState(true);
+    }
 }
 
 bool CAdaptiveMusicPlugin::Hook_LevelInit(const char *pMapName,
@@ -466,7 +463,7 @@ int CAdaptiveMusicPlugin::StopFMODEngine() {
 const char *CAdaptiveMusicPlugin::GetFMODBankPath(const char *bankName) {
     const char *sanitizedBankName = SanitizeBankName(bankName);
     char *bankPath = new char[512];
-    Q_snprintf(bankPath, 512, "%s/sound/fmod/banks/%s", ismm->GetBaseDir(), sanitizedBankName);
+    Q_snprintf(bankPath, 512, "%s/sound/fmod/banks/%s", g_SMAPI->GetBaseDir(), sanitizedBankName);
     // convert backwards slashes to forward slashes
     for (int i = 0; i < 512; i++) {
         if (bankPath[i] == '\\')
@@ -612,6 +609,6 @@ int CAdaptiveMusicPlugin::SetFMODPausedState(bool pausedState) {
         Msg("FMOD Client - Could not pause the master bus! (%d) %s\n", result, FMOD_ErrorString(result));
         return (-1);
     }
-
+    knownFMODPausedState = pausedState;
     return (0);
 }
