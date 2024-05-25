@@ -4,7 +4,10 @@
 #pragma once
 #endif
 
-class CAdaptiveMusicPlugin; // Forward declaration
+// Forward declarations
+class CAdaptiveMusicPlugin;
+
+struct CAdaptiveMusicZone;
 
 //===========================================================================================================
 // BASE WATCHER
@@ -25,7 +28,28 @@ public:
 
     void Init();
 
-    void Think();
+    virtual void Think();
+
+};
+
+//===========================================================================================================
+// ZONE WATCHER
+//===========================================================================================================
+class CAdaptiveMusicZoneWatcher : public CAdaptiveMusicWatcher {
+
+protected:
+
+    std::list<CAdaptiveMusicZone *> *zones;
+
+public:
+
+    void SetZones(std::list<CAdaptiveMusicZone *> *zonesRef);
+
+    void Init();
+
+    void Think() override;
+
+private:
 
 };
 

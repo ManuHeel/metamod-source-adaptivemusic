@@ -35,16 +35,18 @@ struct CAdaptiveMusicZone {
 };
 
 // Struct for holding Scene data
+/*
 struct CAdaptiveMusicScene {
     const char *sceneName;
     const char *stateName;
     const char *parameterName;
     bool lastKnownSceneStateStatus = false;
 };
+*/
 
 class CAdaptiveMusicPlugin : public ISmmPlugin, public IMetamodListener {
 
-protected:
+public:
 
     // FMOD global variables
     FMOD::Studio::System *fmodStudioSystem;
@@ -58,7 +60,8 @@ protected:
 
     // AdaptiveMusic System variables
     bool adaptiveMusicAvailable;
-    std::list<CAdaptiveMusicWatcher*> adaptiveMusicWatchers;
+    edict_t *pAdaptiveMusicPlayer;
+    std::list<CAdaptiveMusicWatcher *> *adaptiveMusicWatchers;
 
 public: // Main Metamod:Source plugins API callbacks
     bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late);
