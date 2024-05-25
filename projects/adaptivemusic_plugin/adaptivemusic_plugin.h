@@ -19,10 +19,27 @@
 #include "fmod_studio.hpp"
 #include "fmod_errors.h"
 
+#include "adaptivemusic_watcher.h"
+
 #if defined WIN32 && !defined snprintf
 #define snprintf _snprintf
 #endif
 
+// Struct for holding ZoneWatcher zones data
+struct CAdaptiveMusicZone {
+    float minOrigin[3];
+    float maxOrigin[3];
+    const char *parameterName;
+    bool lastKnownZoneStatus = false;
+};
+
+// Struct for holding Scene data
+struct CAdaptiveMusicScene {
+    const char *sceneName;
+    const char *stateName;
+    const char *parameterName;
+    bool lastKnownSceneStateStatus = false;
+};
 
 class CAdaptiveMusicPlugin : public ISmmPlugin, public IMetamodListener {
 
@@ -40,6 +57,7 @@ protected:
 
     // AdaptiveMusic System variables
     bool adaptiveMusicAvailable;
+    std::list<CAdaptiveMusicWatcher*> adaptiveMusicWatchers;
 
 public: // Main Metamod:Source plugins API callbacks
     bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late);
