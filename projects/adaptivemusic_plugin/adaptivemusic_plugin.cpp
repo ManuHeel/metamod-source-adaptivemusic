@@ -312,7 +312,7 @@ void CAdaptiveMusicPlugin::Hook_ClientDisconnect(edict_t *pEntity) {
 
 void CAdaptiveMusicPlugin::Hook_GameFrame(bool simulating) {
     // Manage if the FMOD engine should be paused or not
-    if (adaptiveMusicAvailable && loadedFMODStudioEventPath) {
+    if (adaptiveMusicAvailable && startedFMODStudioEventPath) {
         if (simulating && knownFMODPausedState) {
             SetFMODPausedState(false);
         }
@@ -572,19 +572,19 @@ int CAdaptiveMusicPlugin::LoadFMODBank(const char *bankName) {
 // Output: The error code (or 0 if no error was encountered)
 //-----------------------------------------------------------------------------
 int CAdaptiveMusicPlugin::StartFMODEvent(const char *eventPath) {
-    if (loadedFMODStudioEventPath != nullptr && (Q_strcmp(eventPath, loadedFMODStudioEventPath) == 0)) {
+    if (startedFMODStudioEventPath != nullptr && (Q_strcmp(eventPath, startedFMODStudioEventPath) == 0)) {
         // Event is already loaded
-        META_CONPRINTF("AdaptiveMusic Plugin - Event requested for loading but already loaded (%s)\n", eventPath);
+        META_CONPRINTF("AdaptiveMusic Plugin - Event requested for starting but already started (%s)\n", eventPath);
     } else {
         // Event is new
-        if (loadedFMODStudioEventPath != nullptr && (Q_strcmp(loadedFMODStudioEventPath, "") != 0)) {
+        if (startedFMODStudioEventPath != nullptr && (Q_strcmp(startedFMODStudioEventPath, "") != 0)) {
             // Stop the currently playing event
-            StopFMODEvent(loadedFMODStudioEventPath);
+            StopFMODEvent(startedFMODStudioEventPath);
         }
         const char *fullEventPath = Concatenate("event:/", eventPath);
         FMOD_RESULT result;
-        result = fmodStudioSystem->getEvent(fullEventPath, &loadedFMODStudioEventDescription);
-        result = loadedFMODStudioEventDescription->createInstance(&createdFMODStudioEventInstance);
+        result = fmodStudioSystem->getEvent(fullEventPath, &startedFMODStudioEventDescription);
+        result = startedFMODStudioEventDescription->createInstance(&createdFMODStudioEventInstance);
         result = createdFMODStudioEventInstance->start();
         fmodStudioSystem->update();
         if (result != FMOD_OK) {
@@ -593,9 +593,9 @@ int CAdaptiveMusicPlugin::StartFMODEvent(const char *eventPath) {
             return (-1);
         }
         META_CONPRINTF("AdaptiveMusic Plugin - Event successfully started (%s)\n", eventPath);
-        delete[] loadedFMODStudioEventPath;
-        loadedFMODStudioEventPath = new char[strlen(eventPath) + 1];
-        strcpy(loadedFMODStudioEventPath, eventPath);
+        delete[] startedFMODStudioEventPath;
+        startedFMODStudioEventPath = new char[strlen(eventPath) + 1];
+        strcpy(startedFMODStudioEventPath, eventPath);
     }
     return (0);
 }
@@ -608,8 +608,8 @@ int CAdaptiveMusicPlugin::StartFMODEvent(const char *eventPath) {
 int CAdaptiveMusicPlugin::StopFMODEvent(const char *eventPath) {
     const char *fullEventPath = Concatenate("event:/", eventPath);
     FMOD_RESULT result;
-    result = fmodStudioSystem->getEvent(fullEventPath, &loadedFMODStudioEventDescription);
-    result = loadedFMODStudioEventDescription->releaseAllInstances();
+    result = fmodStudioSystem->getEvent(fullEventPath, &startedFMODStudioEventDescription);
+    result = startedFMODStudioEventDescription->releaseAllInstances();
     fmodStudioSystem->update();
     if (result != FMOD_OK) {
         META_CONPRINTF("AdaptiveMusic Plugin - Could not stop Event (%s). Error: (%d) %s\n", eventPath, result,
@@ -617,9 +617,9 @@ int CAdaptiveMusicPlugin::StopFMODEvent(const char *eventPath) {
         return (-1);
     }
     META_CONPRINTF("AdaptiveMusic Plugin - Event successfully stopped (%s)\n", eventPath);
-    delete[] loadedFMODStudioEventPath;
-    loadedFMODStudioEventPath = new char[strlen("") + 1];
-    strcpy(loadedFMODStudioEventPath, "");
+    delete[] startedFMODStudioEventPath;
+    startedFMODStudioEventPath = new char[strlen("") + 1];
+    strcpy(startedFMODStudioEventPath, "");
     return (0);
 }
 
@@ -724,8 +724,8 @@ void CAdaptiveMusicPlugin::InitAdaptiveMusic() {
 //-----------------------------------------------------------------------------
 void CAdaptiveMusicPlugin::ShutDownAdaptiveMusic() {
     META_CONPRINTF("AdaptiveMusic Plugin - Shutting down adaptive music for the map\n");
-    if (loadedFMODStudioEventPath != nullptr) {
-        StopFMODEvent(loadedFMODStudioEventPath);
+    if (startedFMODStudioEventPath != nullptr) {
+        StopFMODEvent(startedFMODStudioEventPath);
     }
 }
 

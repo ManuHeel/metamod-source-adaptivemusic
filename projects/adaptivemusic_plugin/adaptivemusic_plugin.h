@@ -8,6 +8,7 @@
 #ifndef _INCLUDE_ADAPTIVEMUSIC_PLUGIN_H_
 #define _INCLUDE_ADAPTIVEMUSIC_PLUGIN_H_
 
+#include <list>
 #include <ISmmPlugin.h>
 #include <igameevents.h>
 #include <iplayerinfo.h>
@@ -50,8 +51,8 @@ protected:
     FMOD::Studio::Bank *loadedFMODStudioBank;
     char *loadedFMODStudioBankName;
     FMOD::Studio::Bank *loadedFMODStudioStringsBank;
-    FMOD::Studio::EventDescription *loadedFMODStudioEventDescription;
-    char *loadedFMODStudioEventPath;
+    FMOD::Studio::EventDescription *startedFMODStudioEventDescription;
+    char *startedFMODStudioEventPath;
     FMOD::Studio::EventInstance *createdFMODStudioEventInstance;
     bool knownFMODPausedState;
 
