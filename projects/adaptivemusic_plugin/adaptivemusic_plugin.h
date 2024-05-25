@@ -27,6 +27,7 @@
 class CAdaptiveMusicPlugin : public ISmmPlugin, public IMetamodListener {
 
 protected:
+
     // FMOD global variables
     FMOD::Studio::System *fmodStudioSystem;
     FMOD::Studio::Bank *loadedFMODStudioBank;
@@ -36,6 +37,9 @@ protected:
     char *loadedFMODStudioEventPath;
     FMOD::Studio::EventInstance *createdFMODStudioEventInstance;
     bool knownFMODPausedState;
+
+    // AdaptiveMusic System variables
+    bool adaptiveMusicAvailable;
 
 public: // Main Metamod:Source plugins API callbacks
     bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late);
@@ -122,7 +126,7 @@ public: // FMOD engine API methods
     int SetFMODGlobalParameter(const char *parameterName, float value);
 
     int SetFMODPausedState(bool pausedState);
-/*
+
 public: // Adaptive music system management
     void CalculateAdaptiveMusicState();
 
@@ -131,7 +135,7 @@ public: // Adaptive music system management
     void ShutDownAdaptiveMusic();
 
     void ParseKeyValue(KeyValues *keyValue);
-*/
+
 };
 
 extern CAdaptiveMusicPlugin g_AdaptiveMusicPlugin;
