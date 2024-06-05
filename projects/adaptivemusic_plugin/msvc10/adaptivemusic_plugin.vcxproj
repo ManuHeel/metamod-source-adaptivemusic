@@ -640,7 +640,7 @@
     <ClCompile>
       <AdditionalOptions>/D SE_EPISODE1=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_CSS=6 /D SE_ORANGEBOXVALVE=7 /D SE_LEFT4DEAD=8 /D SE_LEFT4DEAD2=9 /D SE_ALIENSWARM=10 /D SE_PORTAL2=1 /D SE_CSGO=12 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;$(HL2SDKOBVALVE)\public;$(HL2SDKOBVALVE)\public\engine;$(HL2SDKOBVALVE)\public\game\server;$(HL2SDKOBVALVE)\public\tier0;$(HL2SDKOBVALVE)\public\tier1;$(HL2SDKOBVALVE)\public\vstdlib;..\..\..\public\fmod\core;..\..\..\public\fmod\studio;..\..\..\public\fmod\fsbank;$(HL2SDKOBVALVE)\game\server;$(HL2SDKOBVALVE)\game\shared;$(HL2SDKOBVALVE)\game;$(HL2SDKOBVALVE)\game\client;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;$(HL2SDKOBVALVE)\public;$(HL2SDKOBVALVE)\public\engine;$(HL2SDKOBVALVE)\public\game\server;$(HL2SDKOBVALVE)\public\tier0;$(HL2SDKOBVALVE)\public\tier1;$(HL2SDKOBVALVE)\public\vstdlib;..\..\..\public\fmod\core;..\..\..\public\fmod\studio;..\..\..\public\fmod\fsbank;$(HL2SDKOBVALVE)\game\server;$(HL2SDKOBVALVE)\game\shared;$(HL2SDKOBVALVE)\game;$(HL2SDKOBVALVE)\game\client;$(HL2SDKOBVALVE)\public\toolframework;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ADAPTIVEMUSIC_PLUGIN_EXPORTS;SOURCE_ENGINE=7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

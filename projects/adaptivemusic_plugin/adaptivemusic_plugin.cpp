@@ -11,6 +11,7 @@
 #include "vector"
 #include "engine_wrappers.h"
 #include "filesystem.h"
+#include "itoolentity.h"
 
 #include "adaptivemusic_plugin.h"
 #include "adaptivemusic_watcher.h"
@@ -86,6 +87,7 @@ bool CAdaptiveMusicPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t 
     GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
     GET_V_IFACE_CURRENT(GetFileSystemFactory, filesystem, IFileSystem, FILESYSTEM_INTERFACE_VERSION);
     GET_V_IFACE_ANY(GetServerFactory, server, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
+    GET_V_IFACE_ANY(GetServerFactory, serverTools, IServerTools, VSERVERTOOLS_INTERFACE_VERSION);
     GET_V_IFACE_ANY(GetServerFactory, gameclients, IServerGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
     GET_V_IFACE_ANY(GetServerFactory, playerinfomanager, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);
 

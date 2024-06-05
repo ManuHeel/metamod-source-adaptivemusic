@@ -1,6 +1,7 @@
 #include "adaptivemusic_plugin.h"
 #include "adaptivemusic_watcher.h"
 
+
 //===========================================================================================================
 // BASE WATCHER
 //===========================================================================================================
@@ -32,6 +33,8 @@ void CAdaptiveMusicHealthWatcher::Init() {
 
 void CAdaptiveMusicHealthWatcher::Think() {
     META_CONPRINTF("AdaptiveMusic Plugin - Health Watcher - Thinking\n");
+    CBaseEntity *pPlayer = NULL;
+    pPlayer = g_AdaptiveMusicPlugin.serverTools->FindEntityByClassname(pPlayer, "player");
     //CBaseEntity *entity = engine->PEntityOfEntIndex(1)->GetUnknown()->GetBaseEntity();
     //META_CONPRINTF("Health = %f\n",entity->GetHealth());
     //META_CONPRINTF("Health = %f",player->GetHealth());

@@ -14,6 +14,7 @@
 #include <iplayerinfo.h>
 #include <sh_vector.h>
 #include "engine_wrappers.h"
+#include "itoolentity.h"
 
 // FMOD Includes
 #include "fmod.hpp"
@@ -47,6 +48,9 @@ struct CAdaptiveMusicScene {
 class CAdaptiveMusicPlugin : public ISmmPlugin, public IMetamodListener {
 
 public:
+
+    // Engine interfaces
+    IServerTools *serverTools = NULL;
 
     // FMOD global variables
     FMOD::Studio::System *fmodStudioSystem;
