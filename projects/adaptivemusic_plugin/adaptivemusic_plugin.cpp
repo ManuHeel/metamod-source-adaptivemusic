@@ -322,9 +322,11 @@ void CAdaptiveMusicPlugin::Hook_GameFrame(bool simulating) {
             SetFMODPausedState(true);
         }
     }
-    // Make the watchers think
-    for (auto const &watcher: *adaptiveMusicWatchers) {
-        watcher->Think();
+    if (simulating) {
+        // Make the watchers think
+        for (auto const &watcher: *adaptiveMusicWatchers) {
+            watcher->Think();
+        }
     }
 }
 
@@ -694,6 +696,7 @@ void CAdaptiveMusicPlugin::CalculateAdaptiveMusicState() {
 // Finds the adaptive music file, parse it and initialize everything related to AdaptiveMusic for this level
 //-----------------------------------------------------------------------------
 void CAdaptiveMusicPlugin::InitAdaptiveMusic() {
+    adaptiveMusicWatchers = new std::list<CAdaptiveMusicWatcher *>();
     // If we know there's Adaptive Music data, initialize the Adaptive Music
     if (adaptiveMusicAvailable) {
         META_CONPRINTF("AdaptiveMusic Plugin - Initializing the map's adaptive music data\n");
@@ -752,7 +755,6 @@ void CAdaptiveMusicPlugin::ParseKeyValue(KeyValues *keyValue) {
             element = element->GetNextKey();
         }
     } else if (!Q_strcmp(keyValueName, "watcher")) {
-        adaptiveMusicWatchers = new std::list<CAdaptiveMusicWatcher *>();
         // The key-value element is defining a watcher and its params for the map
         KeyValues *element = keyValue->GetFirstSubKey();
 
@@ -854,21 +856,15 @@ void CAdaptiveMusicPlugin::ParseKeyValue(KeyValues *keyValue) {
             Warning("FMOD Adaptive Music - Found a AdaptiveMusicWatcher to create but no type was provided\n");
             return;
         }
+        if (!Q_strcmp(watcherType, "health")) {
+            // Create and init the watcher entity, then set its params
+            auto *healthWatcher = new CAdaptiveMusicHealthWatcher;
+            healthWatcher->SetAdaptiveMusicPlugin(this);
+            healthWatcher->SetParameterName(watcherParam);
+            healthWatcher->Init();
+            adaptiveMusicWatchers->push_back(healthWatcher);
+        }
             /*
-            if (!Q_strcmp(watcherType, "health")) {
-                // Create and spawn the watcher entity, then set its params
-                CBaseEntity* pNode = CreateEntityByName("adaptive_music_health_watcher");
-                if (pNode) {
-                    DispatchSpawn(pNode);
-                    auto* healthWatcher = dynamic_cast<CAdaptiveMusicHealthWatcher *>(pNode);
-                    healthWatcher->SetAdaptiveMusicSystem(this);
-                    healthWatcher->SetParameterName(watcherParam);
-                    healthWatcher->Activate();
-                }
-                else {
-                    Warning("FMOD Adaptive Music - Failed to spawn a HealthWatcher entity\n");
-                }
-            }
             else if (!Q_strcmp(watcherType, "suit")) {
                 // Create and spawn the watcher entity, then set its params
                 CBaseEntity* pNode = CreateEntityByName("adaptive_music_suit_watcher");

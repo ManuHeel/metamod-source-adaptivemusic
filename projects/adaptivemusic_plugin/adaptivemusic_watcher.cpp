@@ -22,6 +22,44 @@ void CAdaptiveMusicWatcher::Think() {
 }
 
 //===========================================================================================================
+// HEALTH WATCHER
+//===========================================================================================================
+
+void CAdaptiveMusicHealthWatcher::Init() {
+    lastKnownHealth = 0.0f;
+    META_CONPRINTF("AdaptiveMusic Plugin - Health Watcher - Created\n");
+}
+
+void CAdaptiveMusicHealthWatcher::Think() {
+    META_CONPRINTF("AdaptiveMusic Plugin - Health Watcher - Thinking\n");
+    //CBaseEntity *entity = engine->PEntityOfEntIndex(1)->GetUnknown()->GetBaseEntity();
+    //META_CONPRINTF("Health = %f\n",entity->GetHealth());
+    //META_CONPRINTF("Health = %f",player->GetHealth());
+    /*
+    if (g_AdaptiveMusicPlugin.pAdaptiveMusicPlayer != nullptr) {
+        float playerHealth = g_AdaptiveMusicPlugin.pAdaptiveMusicPlayer->GetUnknown()->GetBaseEntity()->GetHealth();
+        META_CONPRINTF("Health = %f",playerHealth);
+    }
+     */
+    /*
+    if (pAdaptiveMusicPlayer != nullptr) {
+        auto playerHealth = (float) pAdaptiveMusicPlayer->GetHealth();
+        if (playerHealth != lastKnownHealth) {
+            lastKnownHealth = playerHealth;
+            // Send a FMODSetGlobalParameter usermessage
+            CSingleUserRecipientFilter filter(pAdaptiveMusicPlayer);
+            filter.MakeReliable();
+            UserMessageBegin(filter, "FMODSetGlobalParameter");
+            WRITE_STRING(parameterName);
+            WRITE_FLOAT(playerHealth);
+            MessageEnd();
+        }
+    }
+    SetNextThink(gpGlobals->curtime + 0.1f); // Think at 10Hz
+     */
+}
+
+//===========================================================================================================
 // ZONE WATCHER
 //===========================================================================================================
 
