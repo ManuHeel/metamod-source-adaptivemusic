@@ -33,6 +33,26 @@ public:
 };
 
 //===========================================================================================================
+// HEALTH WATCHER
+//===========================================================================================================
+class CAdaptiveMusicHealthWatcher : public CAdaptiveMusicWatcher {
+
+protected:
+
+    float lastKnownHealth;
+
+public:
+
+    void Init();
+
+    void Think() override;
+
+private:
+
+};
+
+
+//===========================================================================================================
 // ZONE WATCHER
 //===========================================================================================================
 class CAdaptiveMusicZoneWatcher : public CAdaptiveMusicWatcher {
