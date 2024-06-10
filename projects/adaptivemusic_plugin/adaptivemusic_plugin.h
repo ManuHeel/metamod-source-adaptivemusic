@@ -51,6 +51,7 @@ public:
 
     // Engine interfaces
     IServerTools *serverTools = NULL;
+    IPlayerInfoManager *playerinfomanager = NULL;
 
     // FMOD global variables
     FMOD::Studio::System *fmodStudioSystem;

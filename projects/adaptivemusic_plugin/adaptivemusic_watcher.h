@@ -47,6 +47,8 @@ public:
 
     void Think() override;
 
+    virtual int GetPlayerHealth(edict_t *edict);
+
 private:
 
 };

@@ -1,11 +1,13 @@
 #include "adaptivemusic_plugin.h"
 #include "adaptivemusic_watcher.h"
-
+#include "mm_utils.h"
+#include "itoolentity.h"
 
 //===========================================================================================================
 // BASE WATCHER
 //===========================================================================================================
 
+// TODO remove this method, the plugin is accessible globally with g_AdaptiveMusicPlugin
 void CAdaptiveMusicWatcher::SetAdaptiveMusicPlugin(CAdaptiveMusicPlugin *pAdaptiveMusicPluginRef) {
     pAdaptiveMusicPlugin = pAdaptiveMusicPluginRef;
 }
@@ -19,12 +21,27 @@ void CAdaptiveMusicWatcher::Init() {
 }
 
 void CAdaptiveMusicWatcher::Think() {
-    //META_CONPRINTF("AdaptiveMusic Plugin - Base Watcher - Thinking at time %f\n", gpGlobals->curtime);
+    //META_CONPRINTF("AdaptiveMusic Plugin - Base Watcher - Thinking");
 }
 
 //===========================================================================================================
 // HEALTH WATCHER
 //===========================================================================================================
+
+/**
+ * Get the player's health.
+ *
+ * @param edict		Player's edict.
+ */
+int CAdaptiveMusicHealthWatcher::GetPlayerHealth(edict_t *edict) {
+    if (pAdaptiveMusicPlugin->playerinfomanager) {
+        IPlayerInfo *playerinfo = pAdaptiveMusicPlugin->playerinfomanager->GetPlayerInfo(edict);
+        if (playerinfo != NULL && playerinfo->GetHealth() != NULL) {
+            return playerinfo->GetHealth();
+        }
+    }
+    return -1;
+}
 
 void CAdaptiveMusicHealthWatcher::Init() {
     lastKnownHealth = 0.0f;
@@ -32,34 +49,14 @@ void CAdaptiveMusicHealthWatcher::Init() {
 }
 
 void CAdaptiveMusicHealthWatcher::Think() {
-    META_CONPRINTF("AdaptiveMusic Plugin - Health Watcher - Thinking\n");
-    CBaseEntity *pPlayer = NULL;
-    pPlayer = g_AdaptiveMusicPlugin.serverTools->FindEntityByClassname(pPlayer, "player");
-    //CBaseEntity *entity = engine->PEntityOfEntIndex(1)->GetUnknown()->GetBaseEntity();
-    //META_CONPRINTF("Health = %f\n",entity->GetHealth());
-    //META_CONPRINTF("Health = %f",player->GetHealth());
-    /*
-    if (g_AdaptiveMusicPlugin.pAdaptiveMusicPlayer != nullptr) {
-        float playerHealth = g_AdaptiveMusicPlugin.pAdaptiveMusicPlayer->GetUnknown()->GetBaseEntity()->GetHealth();
-        META_CONPRINTF("Health = %f",playerHealth);
-    }
-     */
-    /*
-    if (pAdaptiveMusicPlayer != nullptr) {
-        auto playerHealth = (float) pAdaptiveMusicPlayer->GetHealth();
+    //META_CONPRINTF("AdaptiveMusic Plugin - Health Watcher - Thinking\n");
+    if (pAdaptiveMusicPlugin->pAdaptiveMusicPlayer != nullptr) {
+        auto playerHealth = (float) GetPlayerHealth(pAdaptiveMusicPlugin->pAdaptiveMusicPlayer);
         if (playerHealth != lastKnownHealth) {
             lastKnownHealth = playerHealth;
-            // Send a FMODSetGlobalParameter usermessage
-            CSingleUserRecipientFilter filter(pAdaptiveMusicPlayer);
-            filter.MakeReliable();
-            UserMessageBegin(filter, "FMODSetGlobalParameter");
-            WRITE_STRING(parameterName);
-            WRITE_FLOAT(playerHealth);
-            MessageEnd();
+            g_AdaptiveMusicPlugin.SetFMODGlobalParameter(parameterName, playerHealth);
         }
     }
-    SetNextThink(gpGlobals->curtime + 0.1f); // Think at 10Hz
-     */
 }
 
 //===========================================================================================================

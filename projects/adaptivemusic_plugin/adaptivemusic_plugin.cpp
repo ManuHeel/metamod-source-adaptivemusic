@@ -60,7 +60,6 @@ IVEngineServer *engine = NULL;
 IServerPluginHelpers *helpers = NULL;
 IGameEventManager2 *gameevents = NULL;
 IServerPluginCallbacks *vsp_callbacks = NULL;
-IPlayerInfoManager *playerinfomanager = NULL;
 ICvar *icvar = NULL;
 IFileSystem *filesystem = NULL;
 CGlobalVars *gpGlobals = NULL;
